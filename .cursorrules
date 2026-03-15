@@ -1,0 +1,62 @@
+---
+description: Core conventions for the AI-Powered Skill Swap workshop project
+alwaysApply: true
+---
+
+## Proje Genel Bağlamı
+
+- **Proje tipi**: AI destekli yetenek takas (skill swap) platformu.
+- **Frontend**: `frontend` klasöründe Next.js App Router, TypeScript ve (varsayılan) TailwindCSS kullanılır.
+- **Backend**: `backend` klasöründe Go (module `workshop-backend`) ile REST benzeri HTTP API geliştirilir.
+- **Senaryolar**: `stories.md` içindeki hikayeler (profil oluşturma, AI eşleştirme motoru, eşleşme onayı) ürün gereksinimlerinin ana kaynağıdır; geliştirme sırasında bunlar tek gerçek kaynak (single source of truth) kabul edilir.
+
+## Genel Çalışma İlkeleri
+
+- **Öncelik**: Önce `stories.md` içindeki acceptance criteria'yı sağla, sonra teknik iyileştirmeleri yap.
+- **Dil**: Kullanıcıya dönük metinlerde (UI, hata mesajları vb.) varsayılan dil Türkçe olsun; kod, değişken ve fonksiyon isimleri İngilizce tutulur.
+- **Basitlik**: Gereksiz soyutlamalardan kaçın; hikayelerin kapsamını aşan karmaşık altyapılar ekleme (ör. microservice, event bus vb.) ancak gerçekten gerekliyse öner.
+- **Test**: Yeni endpoint veya önemli fonksiyonlar için en azından temel happy-path testi veya manuel test senaryosu belirt.
+
+## Frontend (Next.js) Kuralları
+
+- **App Router**: Yeni sayfalar `frontend/app` altında App Router mimarisiyle oluşturulur. Örneğin:
+  - Profil oluşturma akışı için `app/profile/page.tsx`
+  - Eşleşme listesi için `app/matches/page.tsx` (story'lerde belirtildiği gibi)
+- **Typescript**:
+  - Her yeni dosya `.tsx` veya `.ts` olmalı; `any` kullanımı en son çare olarak düşünülür.
+  - API cevapları için açıkça tip tanımla (`Profile`, `Match`, `ConnectionStatus` gibi).
+- **UI/UX**:
+  - Formlar için erişilebilir HTML elementleri kullan (`label` ile ilişkili input, buton `type`larının doğru ayarlanması).
+  - Uzun işlemlerde loading state ve hata mesajlarını açıkça göster.
+  - Ekran kırılımlarında (mobil/desktop) okunabilir, sade bir layout tercih et.
+- **Veri Akışı**:
+  - Sunucu tarafı veri çekmek için mümkünse Next.js server components veya `fetch` + `cache` stratejilerini kullan; client-side state yönetimini gereksiz yere şişirme.
+
+## Backend (Go) Kuralları
+
+- **Paketleme**:
+  - HTTP handler'lar `backend/internal/controllers` altında konumlanır.
+  - İş mantığı `backend/internal/services` altında tutulur; controller katmanı mümkün olduğunca ince kalır.
+- **Story Referansları**:
+  - Story 1'de belirtilen profil kaydetme endpoint'i `internal/controllers/user.go` içinde bir `POST /users` veya benzeri mantıklı bir rota olarak tanımlanır.
+  - Story 2'deki eşleştirme motoru `internal/services/match.go` içinde, isteğe göre ayrı bir `MatchService` veya benzeri yapı ile uygulanır.
+- **Hata Yönetimi**:
+  - Handler'larda anlamlı HTTP status code'ları dön (400 validation, 404 not found, 500 internal error vb.).
+  - Log mesajlarını İngilizce, kullanıcıya dönen hata mesajlarını Türkçe tutmak tercih edilir.
+
+## Script ve Docker Kuralları
+
+- **Scriptler**:
+  - Çalıştırma komutları `scripts/run.sh` veya benzeri script dosyalarında toplanır; README veya yorum satırlarıyla nasıl kullanılacağı kısaca açıklanır.
+  - Geliştirici deneyimi için tek komutla backend ve frontend'i ayağa kaldıran bir script hedeflenir.
+- **Docker Compose**:
+  - `docker-compose.yml` içeriği eklenirken, en azından frontend ve backend servisleri tanımlanmalı; portlar çakışmayacak ve yerel geliştirme için uygun olmalıdır.
+
+## İletişim ve Dokümantasyon
+
+- **README**:
+  - Frontend ve backend için temel kurulum ve çalışma talimatlarını README'lerde güncel tut.
+  - Önemli mimari kararlar veya trade-off'lar kısa notlarla açıklansın.
+- **Kod Yorumları**:
+  - Sadece niyet ve trade-off'ları açıklayan, koddan anlaşılamayan durumlar için yorum ekle; satır satır açıklama yapma.
+
