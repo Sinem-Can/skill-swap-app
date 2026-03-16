@@ -1,9 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <MessagesContent />
+    </Suspense>
+  );
+}
+
+function MessagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -12,7 +20,7 @@ export default function MessagesPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [activeChat, setActiveChat] = useState("Mert");
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
   type ChatMessage = {
@@ -26,16 +34,36 @@ export default function MessagesPage() {
   };
 
   const [chatData, setChatData] = useState<Record<string, ChatMessage[]>>({
-    'Mert': [
-      { id: 1, text: 'Selam Sinem! Sistem bizi eşleştirdi. Bana Python konusunda yardımcı olabilir misin?', time: '10:30', isMe: false },
-      { id: 2, text: 'Merhaba Mert! Tabii ki, veri analizi kısımlarına odaklanabiliriz.', time: '10:35', isMe: true },
+    Mert: [
+      {
+        id: 1,
+        text: "Selam Sinem! Sistem bizi eşleştirdi. Bana Python konusunda yardımcı olabilir misin?",
+        time: "10:30",
+        isMe: false,
+      },
+      {
+        id: 2,
+        text: "Merhaba Mert! Tabii ki, veri analizi kısımlarına odaklanabiliriz.",
+        time: "10:35",
+        isMe: true,
+      },
     ],
-    'Deniz': [
-      { id: 1, text: 'Selam, 3\'lü takas çemberindeymişiz!', time: '11:15', isMe: false },
+    Deniz: [
+      {
+        id: 1,
+        text: "Selam, 3'lü takas çemberindeymişiz!",
+        time: "11:15",
+        isMe: false,
+      },
     ],
-    'Ece': [
-      { id: 1, text: 'Sistem tasarımı notlarını atabilir misin?', time: 'Dün', isMe: false },
-    ]
+    Ece: [
+      {
+        id: 1,
+        text: "Sistem tasarımı notlarını atabilir misin?",
+        time: "Dün",
+        isMe: false,
+      },
+    ],
   });
 
   // 2. KAPI KONTROLÜ (Bilet var mı?) - Supabase ile
@@ -74,48 +102,57 @@ export default function MessagesPage() {
     const userMsg: ChatMessage = {
       id: Date.now(),
       text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       isMe: true,
     };
     const currentChat = activeChat;
-    setChatData(prev => ({
+    setChatData((prev) => ({
       ...prev,
       [currentChat]: [...(prev[currentChat] || []), userMsg],
     }));
-    setNewMessage('');
+    setNewMessage("");
     setIsTyping(true);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Bağlantı sorunu yaşandı.');
+        throw new Error(data.error || "Bağlantı sorunu yaşandı.");
       }
 
-      const replyText = typeof data.reply === 'string' ? data.reply.trim() : '';
+      const replyText = typeof data.reply === "string" ? data.reply.trim() : "";
       const replyMsg: ChatMessage = {
         id: Date.now(),
-        text: replyText || 'Bağlantı sorunu yaşandı.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: replyText || "Bağlantı sorunu yaşandı.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         isMe: false,
       };
-      setChatData(prev => ({
+      setChatData((prev) => ({
         ...prev,
         [currentChat]: [...(prev[currentChat] || []), replyMsg],
       }));
     } catch {
       const fallbackMsg: ChatMessage = {
         id: Date.now(),
-        text: 'Bağlantı sorunu yaşandı.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: "Bağlantı sorunu yaşandı.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         isMe: false,
       };
-      setChatData(prev => ({
+      setChatData((prev) => ({
         ...prev,
         [currentChat]: [...(prev[currentChat] || []), fallbackMsg],
       }));
@@ -129,28 +166,28 @@ export default function MessagesPage() {
   }, [activeChat]);
 
   const urlUser = searchParams.get("user");
-  const displayName = urlUser && urlUser.trim().length > 0 ? urlUser : activeChat;
+  const displayName =
+    urlUser && urlUser.trim().length > 0 ? urlUser : activeChat;
 
   // 3. EĞER KONTROL BİTMEDİYSE SAYFAYI HİÇ ÇİZME (Beyaz ekran göster)
   if (!isAuthorized) {
-    return null; 
+    return null;
   }
 
   // BURADAN SONRASI NORMAL TASARIM (Sadece yetkisi olanlar görebilir)
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 h-[calc(100vh-4rem)]">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 h-full flex overflow-hidden">
-        
+    <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
+      <div className="flex h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Sol Kenar: Sohbet Listesi */}
-        <div className="w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
-          <div className="p-4 border-b border-gray-200 bg-white">
+        <div className="flex w-1/3 flex-col border-r border-gray-200 bg-gray-50">
+          <div className="border-b border-gray-200 bg-white p-4">
             <h2 className="text-xl font-bold text-gray-800">Mesajlar</h2>
           </div>
-          
-          <div className="overflow-y-auto flex-1">
+
+          <div className="flex-1 overflow-y-auto">
             <div
               onClick={() => setActiveChat("Mert")}
-              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
                 activeChat === "Mert"
                   ? "bg-indigo-50 border-l-4 border-l-indigo-600"
                   : "bg-white hover:bg-gray-50"
@@ -166,7 +203,7 @@ export default function MessagesPage() {
 
             <div
               onClick={() => setActiveChat("Deniz")}
-              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
                 activeChat === "Deniz"
                   ? "bg-indigo-50 border-l-4 border-l-indigo-600"
                   : "bg-white hover:bg-gray-50"
@@ -174,7 +211,7 @@ export default function MessagesPage() {
             >
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">Deniz</h3>
-                <p className="text-sm text-gray-900 font-medium truncate">
+                <p className="text-sm font-medium text-gray-900 truncate">
                   Selam, 3'lü takas çemberindeymişiz!
                 </p>
               </div>
@@ -182,7 +219,7 @@ export default function MessagesPage() {
 
             <div
               onClick={() => setActiveChat("Ece")}
-              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
                 activeChat === "Ece"
                   ? "bg-indigo-50 border-l-4 border-l-indigo-600"
                   : "bg-white hover:bg-gray-50"
@@ -190,7 +227,7 @@ export default function MessagesPage() {
             >
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">Ece</h3>
-                <p className="text-sm text-gray-900 font-medium truncate">
+                <p className="text-sm font-medium text-gray-900 truncate">
                   Sistem tasarımı notlarını atabilir misin?
                 </p>
               </div>
@@ -199,15 +236,13 @@ export default function MessagesPage() {
         </div>
 
         {/* Sağ Taraf: Aktif Sohbet Alanı */}
-        <div className="w-2/3 flex flex-col bg-white">
+        <div className="flex w-2/3 flex-col bg-white">
           <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white p-4">
             <div className="flex flex-col">
               <h2 className="text-sm font-semibold text-gray-500">
                 Sohbet Edilen Kişi
               </h2>
-              <p className="text-lg font-bold text-gray-800">
-                {displayName}
-              </p>
+              <p className="text-lg font-bold text-gray-800">{displayName}</p>
             </div>
             <button
               type="button"
@@ -223,8 +258,12 @@ export default function MessagesPage() {
               msg.isSystem ? (
                 <div key={msg.id} className="flex justify-center">
                   <div className="w-full max-w-md rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 shadow-sm">
-                    <p className="font-bold text-gray-900">{msg.calendarTitle}</p>
-                    <p className="mt-1 text-sm text-gray-700">{msg.calendarDetail}</p>
+                    <p className="font-bold text-gray-900">
+                      {msg.calendarTitle}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-700">
+                      {msg.calendarDetail}
+                    </p>
                     <button
                       type="button"
                       className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
@@ -234,10 +273,27 @@ export default function MessagesPage() {
                   </div>
                 </div>
               ) : (
-                <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[70%] rounded-2xl p-4 ${msg.isMe ? 'rounded-tr-none bg-indigo-600 text-white' : 'rounded-tl-none border border-gray-200 bg-white text-gray-800 shadow-sm'}`}>
+                <div
+                  key={msg.id}
+                  className={`flex ${
+                    msg.isMe ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-2xl p-4 ${
+                      msg.isMe
+                        ? "rounded-tr-none bg-indigo-600 text-white"
+                        : "rounded-tl-none border border-gray-200 bg-white text-gray-800 shadow-sm"
+                    }`}
+                  >
                     <p className="text-sm">{msg.text}</p>
-                    <span className={`mt-2 block text-[10px] ${msg.isMe ? 'text-indigo-200' : 'text-gray-400'}`}>{msg.time}</span>
+                    <span
+                      className={`mt-2 block text-[10px] ${
+                        msg.isMe ? "text-indigo-200" : "text-gray-400"
+                      }`}
+                    >
+                      {msg.time}
+                    </span>
                   </div>
                 </div>
               )
@@ -254,16 +310,19 @@ export default function MessagesPage() {
             )}
           </div>
 
-          <div className="p-4 bg-white border-t border-gray-200">
+          <div className="border-t border-gray-200 bg-white p-4">
             <form onSubmit={handleSendMessage} className="flex gap-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder={`${displayName} için mesaj yaz...`}
-                className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
+                className="flex-1 rounded-xl border border-gray-200 bg-gray-50 p-3 outline-none focus:ring-2 focus:ring-indigo-500"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
               />
-              <button type="submit" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700">
+              <button
+                type="submit"
+                className="rounded-xl bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700"
+              >
                 Gönder
               </button>
             </form>
