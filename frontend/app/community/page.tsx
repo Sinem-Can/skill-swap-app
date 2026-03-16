@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const LEADERS = [
   { rank: 1, name: "Elif Yılmaz", swaps: 24, points: 312, medal: "🥇" },
@@ -25,13 +26,19 @@ const STATS = [
 
 export default function CommunityPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (isLoggedIn !== "true") {
-      router.push("/login");
-    }
-  }, [router]);
+    const checkSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [router, supabase]);
 
   return (
     <div className="min-h-screen bg-gray-50">

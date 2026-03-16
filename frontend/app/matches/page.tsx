@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { createClient } from "@/lib/supabase/client";
 
 type MatchItem = {
   id: number;
@@ -42,17 +44,24 @@ const initialMatches: MatchItem[] = [
 ];
 
 export default function MatchesPage() {
+  const router = useRouter();
+  const supabase = createClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [allMatches, setAllMatches] = useState<MatchItem[]>(initialMatches);
   const [isAIAccepted, setIsAIAccepted] = useState(false);
 
-  // KORUMA: Giriş yapmayanları /login'e yönlendir
+  // KORUMA: Giriş yapmayanları /login'e yönlendir (Supabase ile)
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (isLoggedIn !== "true") {
-      window.location.href = "/login";
-    }
-  }, []);
+    const checkSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [router, supabase]);
 
   const handleAcceptAIRecommendation = () => {
     setAllMatches((prev) => [

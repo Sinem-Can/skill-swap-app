@@ -1,9 +1,11 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function MessagesPage() {
   const router = useRouter();
+  const supabase = createClient();
 
   // 1. GÜVENLİK İÇİN YENİ STATE (Sayfayı göstermeden önce bekletir)
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -35,15 +37,20 @@ export default function MessagesPage() {
     ]
   });
 
-  // 2. KAPI KONTROLÜ (Bilet var mı?)
+  // 2. KAPI KONTROLÜ (Bilet var mı?) - Supabase ile
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (!isLoggedIn) {
-      router.push('/login'); // Bilet yoksa Login'e şutla
-    } else {
-      setIsAuthorized(true); // Bilet varsa "Sayfayı Göster" kilidini aç
-    }
-  }, [router]);
+    const checkSession = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+      } else {
+        setIsAuthorized(true);
+      }
+    };
+    checkSession();
+  }, [router, supabase]);
 
   const handleScheduleMeeting = () => {
     const systemMsg: ChatMessage = {
