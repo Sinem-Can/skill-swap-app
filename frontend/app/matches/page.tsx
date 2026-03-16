@@ -82,6 +82,11 @@ export default function MatchesPage() {
     setIsAIAccepted(true);
   };
 
+  const handleStartChat = () => {
+    toast.success("Sohbet başlatılıyor...");
+    router.push("/messages");
+  };
+
   const query = searchQuery.trim().toLowerCase();
   const matches = query
     ? allMatches.filter(
@@ -190,9 +195,13 @@ export default function MatchesPage() {
 
                 {/* Sağ Taraf: Aksiyon Butonu */}
                 <div className="flex flex-col gap-3 min-w-[150px]">
-                  <Link href="/messages" className="bg-indigo-600 text-white text-center px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm">
+                  <button
+                    type="button"
+                    onClick={handleStartChat}
+                    className="bg-indigo-600 text-white text-center px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-sm"
+                  >
                     Mesaj Gönder
-                  </Link>
+                  </button>
                   <button className="bg-white text-gray-500 text-center px-6 py-2 rounded-xl font-medium border border-gray-200 hover:bg-gray-50 transition-colors text-sm">
                     Pas Geç
                   </button>
