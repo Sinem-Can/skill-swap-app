@@ -117,34 +117,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Sayfa içi navigasyon sekmeleri (Profil, Eşleşmeler, Mesajlar, Topluluk) */}
-        <nav className="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm font-medium shadow-sm">
-          <Link
-            href="/profile"
-            className="rounded-full bg-gray-900 px-4 py-1.5 text-white shadow-sm"
-          >
-            Profil
-          </Link>
-          <Link
-            href="/matches"
-            className="rounded-full px-4 py-1.5 text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700"
-          >
-            Eşleşmeler
-          </Link>
-          <Link
-            href="/messages"
-            className="rounded-full px-4 py-1.5 text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700"
-          >
-            Mesajlar
-          </Link>
-          <Link
-            href="/community"
-            className="rounded-full px-4 py-1.5 text-gray-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700"
-          >
-            Topluluk
-          </Link>
-        </nav>
-
         <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 relative">
           
           <button 
