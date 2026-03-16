@@ -19,7 +19,7 @@ function MessagesContent() {
   // 1. GÜVENLİK İÇİN YENİ STATE (Sayfayı göstermeden önce bekletir)
   const [isAuthorized, setIsAuthorized] = useState(false);
 
-  const [activeChat, setActiveChat] = useState("Mert");
+  const [activeChat, setActiveChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
@@ -82,6 +82,8 @@ function MessagesContent() {
   }, [router, supabase]);
 
   const handleScheduleMeeting = () => {
+    if (!activeChat) return;
+    const key = activeChat;
     const systemMsg: ChatMessage = {
       id: Date.now(),
       isSystem: true,
@@ -90,7 +92,7 @@ function MessagesContent() {
     };
     setChatData((prev) => ({
       ...prev,
-      [activeChat]: [...(prev[activeChat] || []), systemMsg],
+      [key]: [...(prev[key] || []), systemMsg],
     }));
   };
 
@@ -98,6 +100,10 @@ function MessagesContent() {
     e.preventDefault();
     const text = newMessage.trim();
     if (!text) return;
+    if (!activeChat) {
+      setActiveChat("Mert");
+      return;
+    }
 
     const userMsg: ChatMessage = {
       id: Date.now(),
@@ -166,13 +172,63 @@ function MessagesContent() {
   }, [activeChat]);
 
   const urlUser = searchParams.get("user");
-  const displayName =
-    urlUser && urlUser.trim().length > 0 ? urlUser : activeChat;
+  const normalizedUrlUser =
+    urlUser && urlUser.trim().length > 0 ? urlUser.trim() : null;
+
+  // URL'den gelen kullanıcıya göre aktif sohbeti ve varsayılan mesajları ayarla
+  useEffect(() => {
+    if (activeChat) return;
+
+    if (normalizedUrlUser) {
+      const name = normalizedUrlUser;
+      setActiveChat(name);
+      setChatData((prev) => {
+        if (prev[name]) return prev;
+        return {
+          ...prev,
+          [name]: [
+            {
+              id: Date.now(),
+              text: `Merhaba, ben ${name}. Profilindeki yetenekleri gördüm, takas yapmak ister misin?`,
+              time: "Şimdi",
+              isMe: false,
+            },
+          ],
+        };
+      });
+    } else {
+      setActiveChat("Mert");
+    }
+  }, [activeChat, normalizedUrlUser]);
+
+  const displayName = activeChat
+    ? normalizedUrlUser && normalizedUrlUser === activeChat
+      ? normalizedUrlUser
+      : activeChat
+    : normalizedUrlUser || "Mert";
 
   // 3. EĞER KONTROL BİTMEDİYSE SAYFAYI HİÇ ÇİZME (Beyaz ekran göster)
   if (!isAuthorized) {
     return null;
   }
+
+  const baseContacts = ["Mert", "Deniz", "Ece"];
+  const contacts =
+    normalizedUrlUser && !baseContacts.includes(normalizedUrlUser)
+      ? [normalizedUrlUser, ...baseContacts]
+      : baseContacts;
+
+  const getSubtitle = (name: string) => {
+    if (name === "Mert")
+      return "Hafta sonu Discord'dan başlayalım mı?";
+    if (name === "Deniz")
+      return "Selam, 3'lü takas çemberindeymişiz!";
+    if (name === "Ece")
+      return "Sistem tasarımı notlarını atabilir misin?";
+    return `${name} ile yeni bir sohbet başlatın.`;
+  };
+
+  const currentChatKey = activeChat ?? "Mert";
 
   // BURADAN SONRASI NORMAL TASARIM (Sadece yetkisi olanlar görebilir)
   return (
@@ -185,53 +241,24 @@ function MessagesContent() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div
-              onClick={() => setActiveChat("Mert")}
-              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
-                activeChat === "Mert"
-                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
-                  : "bg-white hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Mert</h3>
-                <p className="text-sm text-gray-600 truncate">
-                  Hafta sonu Discord'dan başlayalım mı?
-                </p>
+            {contacts.map((name) => (
+              <div
+                key={name}
+                onClick={() => setActiveChat(name)}
+                className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
+                  activeChat === name
+                    ? "bg-indigo-50 border-l-4 border-l-indigo-600"
+                    : "bg-white hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">{name}</h3>
+                  <p className="text-sm text-gray-600 truncate">
+                    {getSubtitle(name)}
+                  </p>
+                </div>
               </div>
-            </div>
-
-            <div
-              onClick={() => setActiveChat("Deniz")}
-              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
-                activeChat === "Deniz"
-                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
-                  : "bg-white hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Deniz</h3>
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  Selam, 3'lü takas çemberindeymişiz!
-                </p>
-              </div>
-            </div>
-
-            <div
-              onClick={() => setActiveChat("Ece")}
-              className={`flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 p-4 transition-colors ${
-                activeChat === "Ece"
-                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
-                  : "bg-white hover:bg-gray-50"
-              }`}
-            >
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">Ece</h3>
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  Sistem tasarımı notlarını atabilir misin?
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -254,7 +281,7 @@ function MessagesContent() {
           </div>
 
           <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-6">
-            {chatData[activeChat]?.map((msg) =>
+            {(chatData[currentChatKey] ?? []).map((msg: ChatMessage) =>
               msg.isSystem ? (
                 <div key={msg.id} className="flex justify-center">
                   <div className="w-full max-w-md rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 shadow-sm">
@@ -286,7 +313,11 @@ function MessagesContent() {
                         : "rounded-tl-none border border-gray-200 bg-white text-gray-800 shadow-sm"
                     }`}
                   >
-                    <p className="text-sm">{msg.text}</p>
+                    <p className="text-sm">
+                      {msg.text
+                        ? msg.text.replace(/Mert/g, displayName)
+                        : ""}
+                    </p>
                     <span
                       className={`mt-2 block text-[10px] ${
                         msg.isMe ? "text-indigo-200" : "text-gray-400"
