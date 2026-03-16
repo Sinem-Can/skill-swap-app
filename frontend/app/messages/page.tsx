@@ -1,16 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function MessagesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   // 1. GÜVENLİK İÇİN YENİ STATE (Sayfayı göstermeden önce bekletir)
   const [isAuthorized, setIsAuthorized] = useState(false);
 
-  const [activeChat, setActiveChat] = useState('Mert');
+  const [activeChat, setActiveChat] = useState("Mert");
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
@@ -127,6 +128,9 @@ export default function MessagesPage() {
     setIsTyping(false);
   }, [activeChat]);
 
+  const urlUser = searchParams.get("user");
+  const displayName = urlUser && urlUser.trim().length > 0 ? urlUser : activeChat;
+
   // 3. EĞER KONTROL BİTMEDİYSE SAYFAYI HİÇ ÇİZME (Beyaz ekran göster)
   if (!isAuthorized) {
     return null; 
@@ -144,27 +148,51 @@ export default function MessagesPage() {
           </div>
           
           <div className="overflow-y-auto flex-1">
-            <div onClick={() => setActiveChat('Mert')} className={`p-4 border-b border-gray-100 cursor-pointer flex items-center gap-3 transition-colors ${activeChat === 'Mert' ? 'bg-indigo-50 border-l-4 border-l-indigo-600' : 'bg-white hover:bg-gray-50'}`}>
-              <div className="w-12 h-12 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold">M</div>
+            <div
+              onClick={() => setActiveChat("Mert")}
+              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+                activeChat === "Mert"
+                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
+                  : "bg-white hover:bg-gray-50"
+              }`}
+            >
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">Mert</h3>
-                <p className="text-sm text-gray-600 truncate">Hafta sonu Discord'dan başlayalım mı?</p>
+                <p className="text-sm text-gray-600 truncate">
+                  Hafta sonu Discord'dan başlayalım mı?
+                </p>
               </div>
             </div>
 
-            <div onClick={() => setActiveChat('Deniz')} className={`p-4 border-b border-gray-100 cursor-pointer flex items-center gap-3 transition-colors ${activeChat === 'Deniz' ? 'bg-indigo-50 border-l-4 border-l-indigo-600' : 'bg-white hover:bg-gray-50'}`}>
-              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 font-bold">D</div>
+            <div
+              onClick={() => setActiveChat("Deniz")}
+              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+                activeChat === "Deniz"
+                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
+                  : "bg-white hover:bg-gray-50"
+              }`}
+            >
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">Deniz</h3>
-                <p className="text-sm text-gray-900 font-medium truncate">Selam, 3'lü takas çemberindeymişiz!</p>
+                <p className="text-sm text-gray-900 font-medium truncate">
+                  Selam, 3'lü takas çemberindeymişiz!
+                </p>
               </div>
             </div>
 
-            <div onClick={() => setActiveChat('Ece')} className={`p-4 border-b border-gray-100 cursor-pointer flex items-center gap-3 transition-colors ${activeChat === 'Ece' ? 'bg-indigo-50 border-l-4 border-l-indigo-600' : 'bg-white hover:bg-gray-50'}`}>
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-700 font-bold">E</div>
+            <div
+              onClick={() => setActiveChat("Ece")}
+              className={`p-4 border-b border-gray-100 cursor-pointer flex items-center justify-between gap-3 transition-colors ${
+                activeChat === "Ece"
+                  ? "bg-indigo-50 border-l-4 border-l-indigo-600"
+                  : "bg-white hover:bg-gray-50"
+              }`}
+            >
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">Ece</h3>
-                <p className="text-sm text-gray-900 font-medium truncate">Sistem tasarımı notlarını atabilir misin?</p>
+                <p className="text-sm text-gray-900 font-medium truncate">
+                  Sistem tasarımı notlarını atabilir misin?
+                </p>
               </div>
             </div>
           </div>
@@ -173,14 +201,13 @@ export default function MessagesPage() {
         {/* Sağ Taraf: Aktif Sohbet Alanı */}
         <div className="w-2/3 flex flex-col bg-white">
           <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-200 font-bold text-indigo-700">
-                {activeChat.charAt(0)}
-              </div>
-              <div>
-                <h2 className="font-bold text-gray-800">{activeChat}</h2>
-                <p className="text-xs font-medium text-green-500">Çevrimiçi</p>
-              </div>
+            <div className="flex flex-col">
+              <h2 className="text-sm font-semibold text-gray-500">
+                Sohbet Edilen Kişi
+              </h2>
+              <p className="text-lg font-bold text-gray-800">
+                {displayName}
+              </p>
             </div>
             <button
               type="button"
@@ -219,7 +246,8 @@ export default function MessagesPage() {
               <div className="flex justify-start">
                 <div className="max-w-[70%] rounded-2xl rounded-tl-none border border-gray-200 bg-gray-100 px-4 py-2.5 shadow-sm">
                   <p className="text-xs text-gray-500 animate-pulse">
-                    {activeChat} yazıyor<span className="inline-block w-3 text-left">...</span>
+                    {displayName} yazıyor
+                    <span className="inline-block w-3 text-left">...</span>
                   </p>
                 </div>
               </div>
@@ -230,7 +258,7 @@ export default function MessagesPage() {
             <form onSubmit={handleSendMessage} className="flex gap-2">
               <input 
                 type="text" 
-                placeholder={`${activeChat} için mesaj yaz...`}
+                placeholder={`${displayName} için mesaj yaz...`}
                 className="flex-1 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
