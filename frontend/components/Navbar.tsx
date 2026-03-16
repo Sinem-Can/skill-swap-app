@@ -49,43 +49,45 @@ export default function Navbar() {
 
           {/* Sağ: Menü */}
           <div className="flex items-center space-x-8">
-            <Link
-              href="/"
-              className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
-            >
-              Ana Sayfa
-            </Link>
+            <div className="flex items-center space-x-6">
+              <Link
+                href="/"
+                className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
+              >
+                Ana Sayfa
+              </Link>
+              <Link
+                href="/profile"
+                className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
+              >
+                Profil
+              </Link>
+              <Link
+                href="/matches"
+                className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
+              >
+                Eşleşmeler
+              </Link>
+              <Link
+                href="/messages"
+                className="flex shrink-0 items-center gap-2 font-medium text-gray-600 transition-colors hover:text-indigo-600"
+              >
+                Mesajlar
+                <span className="shrink-0 animate-pulse rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                  3 Yeni
+                </span>
+              </Link>
+              <Link
+                href="/community"
+                className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
+              >
+                Topluluk
+              </Link>
+            </div>
 
-            {/* Giriş yapıldığında: Ana Sayfa, Profilim, Eşleşmeler, Mesajlar (3 Yeni) ve Çıkış Yap */}
-            {mounted && isLoggedIn && (
+            {/* Sağ uç: Login / Logout alanı */}
+            {mounted && isLoggedIn ? (
               <>
-                <Link
-                  href="/profile"
-                  className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
-                >
-                  Profilim
-                </Link>
-                <Link
-                  href="/matches"
-                  className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
-                >
-                  Eşleşmeler
-                </Link>
-                <Link
-                  href="/messages"
-                  className="flex shrink-0 items-center gap-2 font-medium text-gray-600 transition-colors hover:text-indigo-600"
-                >
-                  Mesajlar
-                  <span className="shrink-0 animate-pulse rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                    3 Yeni
-                  </span>
-                </Link>
-                <Link
-                  href="/community"
-                  className="font-medium text-gray-600 transition-colors hover:text-indigo-600"
-                >
-                  Topluluk
-                </Link>
                 <div className="mx-2 h-6 shrink-0 border-l border-gray-200" />
                 <button
                   type="button"
@@ -95,12 +97,9 @@ export default function Navbar() {
                   Çıkış Yap
                 </button>
               </>
-            )}
-
-            {/* Mount öncesi ve giriş yapılmamışsa: sadece Ana Sayfa + Giriş Yap (hydration uyumu için) */}
-            {(!mounted || !isLoggedIn) && (
+            ) : (
               <>
-                <div className="mx-2 h-6 border-l border-gray-200" />
+                <div className="mx-2 h-6 shrink-0 border-l border-gray-200" />
                 <Link
                   href="/login"
                   className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition-colors hover:bg-indigo-700"
