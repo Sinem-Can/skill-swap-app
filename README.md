@@ -20,6 +20,7 @@ Welcome to **SkillSwap** – an innovative platform for seamless skill trading, 
 | Frontend        | [Next.js 14/15](https://nextjs.org/)       |
 | Backend/DB      | [Supabase](https://supabase.com/)           |
 | Styling         | [Tailwind CSS](https://tailwindcss.com/)    |
+| AI Code Editor  | Cursor                       |
 | AI Assistant    | Google Generative AI (Gemini) |
 | Deployment      | Vercel, GitHub                |
 
